@@ -9,7 +9,7 @@
 #define MODBUS_SERIAL_BAUD 9600 // Baud rate for esp32 and max485 communication
 
 // voltage, current and frequency data register of DDM18SD
-uint16_t data_register[3] = {0x0000, 0x0008, 0x002A};
+uint16_t data_register[1] = {0x0000};
 
 //Initialize the ModbusMaster object as node1
 ModbusMaster node1;
