@@ -65,7 +65,7 @@ void loop()
 
       
       //Modbus function 0x03 Read Holding Registers according to energy meter datasheet
-      result = node1.readHoldingRegisters(0x0000, 0x0001);
+      result = node1.readHoldingRegisters(0x0000, 1);
         if (result == node1.ku8MBSuccess) {
           Serial.println("Success, Received data: ");
           
@@ -90,7 +90,7 @@ void loop()
           delay(5000); 
         }
 
-    result2 = node2.readHoldingRegisters(3, 1);
+    result2 = node2.readHoldingRegisters(0x0000, 1);
         if (result2 == node2.ku8MBSuccess) {
           Serial.println("Success, Received data: ");
           
