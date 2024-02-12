@@ -1,6 +1,10 @@
 #include <Arduino.h>
 // github link: https://github.com/4-20ma/ModbusMaster
 #include <ModbusMaster.h>
+#include <SPI.h>
+#include "WiFi.h"
+#include "ESPAsyncWebServer.h" 
+
 
 /* Modbus stuff */
 #define MODBUS_DIR_PIN  4 // connect DR, RE pin of MAX485 to gpio 4
