@@ -1,19 +1,24 @@
+//
+// ANEMOMETER AND WIND DIRECTION POINTER FOR AGRICULTURAL DRONE
+// 20240212
+
 #include <Arduino.h>
 // github link: https://github.com/4-20ma/ModbusMaster
 #include <ModbusMaster.h>
 #include <SPI.h>
 #include "WiFi.h"
-#include "ESPAsyncWebServer.h" 
+#include "ESPAsyncWebServer.h"
+#include <Preferences.h> // EEPROM library
 
 
 /* Modbus stuff */
 #define MODBUS_DIR_PIN  4 // connect DR, RE pin of MAX485 to gpio 4
-#define MODBUS_RX_PIN 18 // Rx pin  
-#define MODBUS_TX_PIN 19 // Tx pin 
-#define MODBUS_SERIAL_BAUD 9600 // Baud rate for esp32 and max485 communication
+#define MODBUS_RX_PIN 18 // Rx pin 18 of ESP32 connect to RO pin of MAX485
+#define MODBUS_TX_PIN 19 // Tx pin 19 of ESP32 connect to DI pin of MAX485
+#define MODBUS_SERIAL_BAUD 4800 // Baud rate for esp32 and max485 communication
 
 // voltage, current and frequency data register of DDM18SD
-uint16_t data_register[1] = {0x0000};
+uint16_t data_register[2] = {0x0000, 0x0001};
 
 //Initialize the ModbusMaster object as node1
 ModbusMaster node1;
@@ -42,8 +47,8 @@ void setup()
 
   //Serial2.begin(baud-rate, protocol, RX pin, TX pin);.
   Serial2.begin(MODBUS_SERIAL_BAUD, SERIAL_8E1, MODBUS_RX_PIN, MODBUS_TX_PIN);
-  Serial2.setTimeout(200);
-  //modbus slave ID 14
+  Serial2.setTimeout(2000);
+  //modbus slave ID 1
   node1.begin(1, Serial2);
   node2.begin(2, Serial2);
 
@@ -52,6 +57,8 @@ void setup()
    node1.postTransmission(modbusPostTransmission);
    node2.preTransmission(modbusPreTransmission);
    node2.postTransmission(modbusPostTransmission);
+
+   Serial.println("end of setup");
   
   }
 
@@ -70,6 +77,8 @@ void loop()
       
       //Modbus function 0x03 Read Holding Registers according to energy meter datasheet
       result = node1.readHoldingRegisters(0x0000, 1);
+      Serial.println("first reading");
+      Serial.println(node1.getResponseBuffer(0x01));
         if (result == node1.ku8MBSuccess) {
           Serial.println("Success, Received data: ");
           
@@ -83,18 +92,25 @@ void loop()
             Serial.print("Wind speed: ");
             // we just convert the uint16_t type data array to float type using type casting
             reading = *((float *)data);
-            Serial.print(reading/10);
-            Serial.println(" m/s");
+            Serial.print(reading/10); // conversion to m/s
+            Serial.println(" m/s  ou ");
+            Serial.print(reading*0.36); //conversion to km/h
+            Serial.println(" km/h");
            
            
         } else {
-          Serial.print("Failed, Response Code: ");
+          Serial.print("Slave 1 failed, Response Code: ");
           Serial.print(result, HEX);
           Serial.println("");
           delay(5000); 
         }
 
-    result2 = node2.readHoldingRegisters(0x0000, 1);
+    result2 = node2.readHoldingRegisters(0, 1);
+    Serial.println(node2.getResponseBuffer(0x00));
+    Serial.println(node2.getResponseBuffer(0x01));
+    Serial.println(node2.getResponseBuffer(0x02));
+    Serial.println(node2.getResponseBuffer(0x03));
+    Serial.println(node2.getResponseBuffer(0x04));
         if (result2 == node2.ku8MBSuccess) {
           Serial.println("Success, Received data: ");
           
@@ -108,16 +124,17 @@ void loop()
             Serial.print("Wind direction: ");
             // we just convert the uint16_t type data array to float type using type casting
             reading2 = *((float *)data2);
+            Serial.print(" Azimuth = ");
             Serial.print(reading2);
             Serial.println(" grades");
            
            
         } else {
-          Serial.print("Failed, Response Code: ");
+          Serial.print("Slave 2 failed, Response Code: ");
           Serial.print(result, HEX);
           Serial.println("");
           delay(5000); 
         } 
     
-    delay(1000);
+    delay(400);
   }
