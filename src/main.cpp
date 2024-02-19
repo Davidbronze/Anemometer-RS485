@@ -4,7 +4,7 @@
 
 #include <Arduino.h>
 // github link: https://github.com/4-20ma/ModbusMaster
-#include <ModbusMaster.h>
+#include <ModbusMaster.h> // só serve para dados de 32 bits
 #include <SPI.h>
 #include "WiFi.h"
 #include "ESPAsyncWebServer.h"
@@ -21,8 +21,8 @@
 uint16_t data_register[2] = {0x0000, 0x0001};
 
 //Initialize the ModbusMaster object as node1
-ModbusMaster node1;
-ModbusMaster node2;
+// ModbusMaster node1; // a lib ModbusMaster é somente para slaves que armazenam dados em 32 bits
+// ModbusMaster node2;
 
 // Pin 4 made high for Modbus transmision mode
 void modbusPreTransmission()
@@ -47,19 +47,38 @@ void setup()
 
   //Serial2.begin(baud-rate, protocol, RX pin, TX pin);.
   Serial2.begin(MODBUS_SERIAL_BAUD, SERIAL_8E1, MODBUS_RX_PIN, MODBUS_TX_PIN);
-  Serial2.setTimeout(2000);
+  Serial2.setTimeout(2000);    
+  
+
   //modbus slave ID 1
-  node1.begin(1, Serial2);
-  node2.begin(2, Serial2);
+  // node1.begin(1, Serial2);
+  // node2.begin(2, Serial2);
 
 //  callbacks allow us to configure the RS485 transceiver correctly
-   node1.preTransmission(modbusPreTransmission);
-   node1.postTransmission(modbusPostTransmission);
-   node2.preTransmission(modbusPreTransmission);
-   node2.postTransmission(modbusPostTransmission);
+//   node1.preTransmission(modbusPreTransmission);
+//   node1.postTransmission(modbusPostTransmission);
+//   node2.preTransmission(modbusPreTransmission);
+//   node2.postTransmission(modbusPostTransmission);
 
    Serial.println("end of setup");
   
+  }
+
+  void sendModBus (){
+    modbusPreTransmission();    
+   uint8_t modBusCommand[8] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x02, 0xC4, 0x0B};
+   for (int i=0; i<=8; i++){
+    Serial2.print(modBusCommand[i]);
+   }
+   modbusPostTransmission();
+   Serial.println("command sent");
+  }
+
+  void receiveModBus(){
+    if (Serial2.available()){
+      char dataBit = Serial2.read();      
+      uint8_t modBusResponse[] = {};
+    }
   }
 
 void loop()
@@ -74,8 +93,12 @@ void loop()
     int j;
     float reading2;
 
+
+
+
+
       
-      //Modbus function 0x03 Read Holding Registers according to energy meter datasheet
+      /* //Modbus function 0x03 Read Holding Registers according to energy meter datasheet
       result = node1.readHoldingRegisters(0x0000, 1);
       Serial.println("first reading");
       Serial.println(node1.getResponseBuffer(0x01));
@@ -136,5 +159,5 @@ void loop()
           delay(5000); 
         } 
     
-    delay(400);
+    delay(400); */
   }
