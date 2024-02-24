@@ -21,8 +21,10 @@
 uint16_t data_register[2] = {0x0000, 0x0001};
 
 //Initialize the ModbusMaster object as node1
-ModbusMaster node1;
-ModbusMaster node2;
+//ModbusMaster node1;
+//ModbusMaster node2;
+
+//SoftwareSerial Serial2(MODBUS_RX_PIN, MODBUS_TX_PIN);
 
 // Pin 4 made high for Modbus transmision mode
 void modbusPreTransmission()
@@ -49,14 +51,14 @@ void setup()
   Serial2.begin(MODBUS_SERIAL_BAUD, SERIAL_8E1, MODBUS_RX_PIN, MODBUS_TX_PIN);
   Serial2.setTimeout(2000);
   //modbus slave ID 1
-  node1.begin(1, Serial2);
-  node2.begin(2, Serial2);
+  //node1.begin(1, Serial2);
+  //node2.begin(2, Serial2);
 
 //  callbacks allow us to configure the RS485 transceiver correctly
-   node1.preTransmission(modbusPreTransmission);
-   node1.postTransmission(modbusPostTransmission);
-   node2.preTransmission(modbusPreTransmission);
-   node2.postTransmission(modbusPostTransmission);
+//   node1.preTransmission(modbusPreTransmission);
+//   node1.postTransmission(modbusPostTransmission);
+//   node2.preTransmission(modbusPreTransmission);
+//   node2.postTransmission(modbusPostTransmission);
 
    Serial.println("end of setup");
   
@@ -105,12 +107,10 @@ void loop()
           delay(5000); 
         }
 
-    result2 = node2.readHoldingRegisters(0, 1);
-    Serial.println(node2.getResponseBuffer(0x00));
-    Serial.println(node2.getResponseBuffer(0x01));
-    Serial.println(node2.getResponseBuffer(0x02));
-    Serial.println(node2.getResponseBuffer(0x03));
-    Serial.println(node2.getResponseBuffer(0x04));
+    result2 = node2.readHoldingRegisters(1, 1);
+    Serial.println(node2.getResponseBuffer(0x0000));
+    Serial.println(node2.getResponseBuffer(0x0001));
+    Serial.println(node2.getResponseBuffer(0x0002));
         if (result2 == node2.ku8MBSuccess) {
           Serial.println("Success, Received data: ");
           
