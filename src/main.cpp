@@ -12,6 +12,7 @@
 #include <Preferences.h> // EEPROM library
 
 
+
 /* Modbus stuff */
 #define MODBUS_DIR_PIN  4 // connect DR, RE pin of MAX485 to gpio 4
 #define MODBUS_RX_PIN 18 // Rx pin 18 of ESP32 connect to RO pin of MAX485
@@ -20,6 +21,8 @@
 
 
 ModbusRTUMaster modbus(Serial2, MODBUS_DIR_PIN); // serial port, driver enable pin for rs-485 (optional)
+
+AsyncWebServer server(80);
 
 uint16_t inputSpeed[2]; // array to storage the holding registers of anemometer
 uint16_t inputDirection[2]; // array to storage holding registers of wind direction
@@ -57,9 +60,9 @@ void setup()
         }
 
   void sendModBus (){
-          modbusPreTransmission();    
+        modbusPreTransmission();
         uint8_t modBusCommand[8] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x02, 0xC4, 0x0B};
-        for (int i=0; i<=8; i++){
+        for (int i=0; i<8; i++){
           Serial2.print(modBusCommand[i]);
         }
         modbusPostTransmission();
