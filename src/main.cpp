@@ -14,9 +14,9 @@
 
 
 /* Modbus stuff */
-#define MODBUS_DE_PIN  4 // connect DR, RE pin of MAX485 to gpio 4
-#define MODBUS_RX_PIN 18 // Rx pin 18 of ESP32 connect to RO pin of MAX485
-#define MODBUS_TX_PIN 19 // Tx pin 19 of ESP32 connect to DI pin of MAX485
+#define MODBUS_DE_PIN 18 // connect DR, RE pin of MAX485 to gpio 4
+#define MODBUS_RX_PIN 16 // Rx pin 18 of ESP32 connect to RO pin of MAX485
+#define MODBUS_TX_PIN 17 // Tx pin 19 of ESP32 connect to DI pin of MAX485
 #define MODBUS_SERIAL_BAUD 4800 // Baud rate for esp32 and max485 communication
 
 
@@ -115,7 +115,7 @@ void setup()
 
         //Serial2.begin(baud-rate, protocol, RX pin, TX pin);
         Serial2.begin(MODBUS_SERIAL_BAUD, SERIAL_8N1, MODBUS_RX_PIN, MODBUS_TX_PIN);
-        node1.begin(1, Serial2);
+        node1.begin(1, Serial2);        
         node2.begin(2, Serial2);  
 
         //calbacks de RS485
@@ -159,7 +159,9 @@ void loop()
         uint16_t data[6];
         uint16_t data2[6];
 
-        result = node1.readHoldingRegisters(0x000, 2);
+        result = node1.readHoldingRegisters(0x0000, 2);
+        Serial.print("node1 response:  ");
+        Serial.println(result, HEX);
         if (result==node1.ku8MBSuccess){
           Serial.print("Wind Speed=  ");
           for (int i = 0; i < 2; i ++){
@@ -171,7 +173,9 @@ void loop()
 
         delay(timeOutHere);
 
-        result = node2.readHoldingRegisters(0x000, 2);
+        result = node2.readHoldingRegisters(0x0000, 2);
+        Serial.print("node2 response:  ");
+        Serial.println(result, HEX);
         if (result==node2.ku8MBSuccess){
           Serial.print("Wind Direction=  ");
           for (int i = 0; i < 2; i ++){
