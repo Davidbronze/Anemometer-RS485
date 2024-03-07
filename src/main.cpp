@@ -157,7 +157,7 @@ void loop()
 {
         uint8_t result;
         uint16_t data[6];
-        uint16_t data2[6];
+        uint16_t data2[6];        
 
         result = node1.readHoldingRegisters(0x0000, 2);
         Serial.print("node1 response:  ");
