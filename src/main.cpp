@@ -163,6 +163,7 @@ void loop()
 
         //node1.preTransmission(modbusPreTransmission);       
           result = node1.readHoldingRegisters(0x0000, 2);
+          Serial.println(node1.finalCommandMsg());
         Serial.print("node1 response:  ");
         Serial.println(result, HEX);
         if (result==node1.ku8MBSuccess){
@@ -176,6 +177,7 @@ void loop()
         
 
         result = node2.readHoldingRegisters(0x0000, 2);
+        Serial.println(node2.finalCommandMsg());
         Serial.print("node2 response:  ");
         Serial.println(result, HEX);
         if (result==node2.ku8MBSuccess){
