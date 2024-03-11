@@ -35,7 +35,9 @@ const char* password = "XXXXXXXXXXX";
 uint16_t inputSpeed[2]; // array to storage the holding registers of anemometer
 uint16_t inputDirection[2]; // array to storage holding registers of wind direction
 
-int timeOutHere = 200;
+int intervalReading = 2000;
+int lastReading = 0;
+
 
 String windLimit = "";
 String humidityLimit = "";
@@ -120,9 +122,9 @@ void setup()
 
         //calbacks de RS485
         node1.preTransmission(modbusPreTransmission);
-        node1.postTransmission(modbusPreTransmission);
-        node2.preTransmission(modbusPostTransmission);
-        node2.postTransmission(modbusPostTransmission);
+        node1.postTransmission(modbusPostTransmission);
+        //node2.preTransmission(modbusPreTransmission);
+        //node2.postTransmission(modbusPostTransmission);
         
 
         //callbacks de webserver
@@ -157,9 +159,10 @@ void loop()
 {
         uint8_t result;
         uint16_t data[6];
-        uint16_t data2[6];        
+        uint16_t data2[6];
 
-        result = node1.readHoldingRegisters(0x0000, 2);
+        //node1.preTransmission(modbusPreTransmission);       
+          result = node1.readHoldingRegisters(0x0000, 2);
         Serial.print("node1 response:  ");
         Serial.println(result, HEX);
         if (result==node1.ku8MBSuccess){
@@ -170,8 +173,7 @@ void loop()
           }
           Serial.println();
         }
-
-        delay(timeOutHere);
+        
 
         result = node2.readHoldingRegisters(0x0000, 2);
         Serial.print("node2 response:  ");
@@ -183,6 +185,6 @@ void loop()
             Serial.println(data2[i]);
           }
           Serial.println();
-        }
+        }        
       
   }
