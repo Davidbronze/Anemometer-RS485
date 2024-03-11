@@ -123,8 +123,8 @@ void setup()
         //calbacks de RS485
         node1.preTransmission(modbusPreTransmission);
         node1.postTransmission(modbusPostTransmission);
-        //node2.preTransmission(modbusPreTransmission);
-        //node2.postTransmission(modbusPostTransmission);
+        node2.preTransmission(modbusPreTransmission);
+        node2.postTransmission(modbusPostTransmission);
         
 
         //callbacks de webserver
@@ -160,10 +160,9 @@ void loop()
         uint8_t result;
         uint16_t data[6];
         uint16_t data2[6];
-
-        //node1.preTransmission(modbusPreTransmission);       
-          result = node1.readHoldingRegisters(0x0000, 2);
-          Serial.println(node1.finalCommandMsg());
+       
+        result = node1.readHoldingRegisters(0x0000, 2);
+        Serial.println(node1.finalCommandMsg());
         Serial.print("node1 response:  ");
         Serial.println(result, HEX);
         if (result==node1.ku8MBSuccess){
