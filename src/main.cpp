@@ -38,6 +38,10 @@ uint16_t inputDirection[2]; // array to storage holding registers of wind direct
 int intervalReading = 2000;
 int lastReading = 0;
 
+uint8_t result;
+uint16_t data[6];
+uint16_t data2[6];
+
 
 String windLimit = "";
 String humidityLimit = "";
@@ -52,7 +56,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     <link href="https://fonts.googleapis.com/css?family=Prompt&display=swap" rel="stylesheet">
     <link rel="shortcut icon" href="imagens/agro3.ico" type="image/vnd.microsoft.icon">    
     <title>AgroexPerto</title>
-    <style type="text/css">
+<style type="text/css">
 
 </style>
 </head>
@@ -61,73 +65,135 @@ const char index_html[] PROGMEM = R"rawliteral(
 <canvas width="400" height="600"></canvas>
 <!-- partial -->
     <div class="div1"><br>
-    %PLACEHOLDER%
-    <script>
-         const sel = document.querySelector.bind(document);
 
-const canvas = sel('canvas');
-const c = canvas.getContext('2d');
+<script>
+    const sel = document.querySelector.bind(document);
+    const canvas = sel('canvas');
+    const cv = canvas.getContext('2d');
+    const cv2 = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    const MIDX = Math.floor(W/2);
+    const MIDY = Math.floor(H/2);
+    const MINSPEED = 300;
+    const MAXSPEED = 300;
+    let speed = MINSPEED;
 
-const W = canvas.width;
-const H = canvas.height;
-const MIDX = Math.floor(W/2);
-const MIDY = Math.floor(H/3);
-const MINSPEED = 180;
-const MAXSPEED = 340;
-let prev = null;
-let speed = 250;
+    %PLACEHOLDER%    
 
 requestAnimationFrame(updateMeter);
 
-function updateMeter(curr)
-{
-  
+function updateMeter(atual)
+{ 
   meter(speed);
-
+  compass(azimuth1);
   requestAnimationFrame(updateMeter);
 }
 
 //meter(280, 100, 100);
 
-function meter(angle = 280, centerX = MIDX, centerY = MIDY, radius = 100)
-{
-  c.fillStyle = '#444444';
-  c.fillRect(0, 0, W, H);
-
-  spokes(centerX, centerY, 5, 85, 5, 345, 185, 2, '#ffff00')
-  spokes(centerX, centerY);
-  finalLine(angle, '#ff0000', 4, centerX, centerY);
-  arc(centerX, centerY, '#ff00ff', 3, 180, 350, radius - 80, 'butt');
-  arc(centerX, centerY, '#00ACC1', 3, 180, 350, radius - 85, 'butt');
-  arc(centerX, centerY, '#ff00ff', 8, 180, 340, radius);
-  arc(centerX, centerY, '#ffff00', 5, 180, angle, radius);
-  c.font = '1.6rem Roboto';
-  c.fillStyle = '#ffffff';
-  c.fillText(Math.floor(angle), centerX - 20, centerY + 30);
+function compass(azim = 10, centerX = MIDX, centerY = (3.3*MIDY/2), radius = 50){
+  arcCompass(centerX, centerY,'#00FF7F', 4, 0, 360, radius, 'butt');  
+  compassLine(azim, '#FF0000', 4, centerX, centerY);
+  arcCompass(centerX, centerY,'#00FF7F', 8, 0, 360, 4, 'butt');
+  cv.font = '2rem Roboto';
+  cv.fillStyle = '#ffffff';
+  cv.fillText(azimuth1+90, centerX-20, centerY + 90);  
 }
 
-function d(x){ return (Math.PI / 180) * x; }
+function meter(angle = 250, centerX = MIDX, centerY = MIDY, radius = 100)
+{
+  cv.fillStyle = '#444444';
+  cv.fillRect(0, 0, W, H);
+
+  //spokes(centerX, centerY, 5, 85, 5, 345, 185, 2, '#ffff00')
+  spokes(centerX, centerY);
+  arc(centerX, centerY, '#00FF7F', 20, 180, 260, radius, 'butt');
+  arc(centerX, centerY, '#FFFF00', 20, 260, 300, radius, 'butt');
+  arc(centerX, centerY, '#FF0000', 20, 300, 340, radius, 'butt');
+  finalLine(angle, '#ff0000', 8, centerX, centerY);
+  arc(centerX, centerY, '#0000FF', 3, 180, 350, radius - 80, 'butt');
+  arc(centerX, centerY, '#00ACC1', 3, 180, 350, radius - 85, 'butt');  
+  //arc(centerX, centerY, '#ffff00', 5, 180, angle, radius);
+  cv.font = '2rem Roboto';
+  cv.fillStyle = '#ffffff';
+  cv.fillText((Math.floor(angle))/10, centerX - 20, centerY + 60);
+  cv.font = '2rem Roboto';
+  cv.fillStyle = '#ffffff';
+  cv.fillText('km/h', centerX - 25, centerY + 90);
+}
+
+
+function compassLine(azim=270, color = '#1E90FF', width = 4, centerX = MIDX, centerY = (3.3*MIDY/2)){
+  let p1 = polarToCartesian(5, azim+100);
+  let p2 = polarToCartesian(40, azim);
+  let p3 = polarToCartesian(5, azim-100);
+  let p4 = polarToCartesian(-40, azim);
+
+    cv2.beginPath();
+    cv2.strokeStyle = color;
+    cv2.lineWidth = width;
+    cv2.lineCap = 'butt';
+    cv2.moveTo(centerX + p1.x, centerY +  p1.y);
+    cv2.lineTo(centerX + p2.x, centerY +  p2.y);
+    cv2.stroke();
+  cv2.beginPath();
+  cv2.strokeStyle = color;
+  cv2.lineWidth = width;
+  cv2.lineCap = 'butt';
+  cv2.moveTo(centerX + p3.x, centerY +  p3.y);
+  cv2.lineTo(centerX + p2.x, centerY +  p2.y);
+  cv2.stroke();
+    cv2.beginPath();
+    cv2.strokeStyle = '#DCDCDC';
+    cv2.lineWidth = width;
+    cv2.lineCap = 'butt';
+    cv2.moveTo(centerX + p1.x, centerY +  p1.y);
+    cv2.lineTo(centerX + p4.x, centerY +  p4.y);
+    cv2.stroke();
+  cv2.beginPath();
+  cv2.strokeStyle = '#DCDCDC';
+  cv2.lineWidth = width;
+  cv2.lineCap = 'butt';
+  cv2.moveTo(centerX + p3.x, centerY +  p3.y);
+  cv2.lineTo(centerX + p4.x, centerY +  p4.y);
+  cv2.stroke();
+}
 
 function finalLine(angle = 340, color = '#ff0000', width = 4, centerX = MIDX, centerY = MIDY)
 {
   let p1 = polarToCartesian(15, angle);
   let p2 = polarToCartesian(100, angle);
-  c.beginPath();
-  c.strokeStyle = color;
-  c.lineWidth = width;
-  c.moveTo(centerX + p1.x, centerY +  p1.y);
-  c.lineTo(centerX + p2.x, centerY +  p2.y);
-  c.stroke();
+  cv.beginPath();
+  cv.strokeStyle = color;
+  cv.lineWidth = width;
+  cv.moveTo(centerX + p1.x, centerY +  p1.y);
+  cv.lineTo(centerX + p2.x, centerY +  p2.y);
+  cv.stroke();
 }
 
-function arc(centerX = MIDX, centerY = MIDY, arcColor = '#ff00ff', arcWidth = 8, startAngle = 180, endAngle = 340, radius = MIDX - 100, arcCap = 'round')
+function arc(centerX = MIDX, centerY = MIDY, arcColor = '#ff00ff', arcWidth = 8, startAngle = 300, endAngle = 340, radius = MIDX - 100, arcCap = 'round')
 {
-  c.beginPath();
-  c.strokeStyle = arcColor;
-  c.lineWidth = arcWidth;
-  c.lineCap = arcCap;
-  c.arc(centerX, centerY, radius, d(startAngle), d(endAngle), false);
-  c.stroke();
+  const gradient = cv.createLinearGradient(0,100,300,200);
+  gradient.addColorStop("0.5", "#00FF7F");
+  gradient.addColorStop("0.8", "yellow");
+  gradient.addColorStop("1", "red");
+  cv.beginPath();
+  cv.strokeStyle = gradient;
+  cv.lineWidth = arcWidth;
+  cv.lineCap = arcCap;
+  cv.arc(centerX, centerY, radius, d(startAngle), d(endAngle), false);
+  cv.stroke();
+}
+
+function arcCompass(centerX = MIDX, centerY = MIDY, arcColor = '#ff00ff', arcWidth = 8, startAngle = 300, endAngle = 340, radius = MIDX - 100, arcCap = 'round')
+{  
+  cv.beginPath();
+  cv.strokeStyle = arcColor;
+  cv.lineWidth = arcWidth;
+  cv.lineCap = arcCap;
+  cv.arc(centerX, centerY, radius, d(startAngle), d(endAngle), false);
+  cv.stroke();
 }
 
 function polarToCartesian(radius, angle)
@@ -135,21 +201,23 @@ function polarToCartesian(radius, angle)
   return {x: radius * Math.cos(d(angle)), y: radius * Math.sin(d(angle))};
 }
 
+function d(x){ return (Math.PI / 180) * x; }
+
 function spokes(centerX = MIDX, centerY = MIDY, stepAngle = 20, radius = 80, spokeLength = 10, last = 350, startAngle = 180, spokeWidth = 4, spokeColor = '#00ffff')
 {
-  c.beginPath();
-  c.strokeStyle = spokeColor;
-  c.lineWidth = spokeWidth;
-  c.lineCap = 'butt';
+  cv.beginPath();
+  cv.strokeStyle = spokeColor;
+  cv.lineWidth = spokeWidth;
+  cv.lineCap = 'butt';
 
   for(let currAngle = startAngle; currAngle < last; currAngle += stepAngle)
   {
     let p1 = polarToCartesian(radius, currAngle);
-    c.moveTo(centerX + p1.x, centerY + p1.y);
+    cv.moveTo(centerX + p1.x, centerY + p1.y);
     let p2 = polarToCartesian(radius + spokeLength, currAngle);
-    c.lineTo(centerX + p2.x, centerY + p2.y);
+    cv.lineTo(centerX + p2.x, centerY + p2.y);
   }
-  c.stroke();
+  cv.stroke();
 }
               
     </script>
@@ -161,17 +229,11 @@ function spokes(centerX = MIDX, centerY = MIDY, stepAngle = 20, radius = 80, spo
 
 String processor(const String& var){
   if(var == "PLACEHOLDER"){
-    String currentProgram ="";    
-    
-    currentProgram = "<br><table><tr><td>Temperatura</td><td>"+temperatureLimit+" ºC</td></tr>"+
-                                  "<tr><td>Fotoperíodo</td><td>"+windLimit+" horas</td></tr>"+
-                                  "<tr><td>Número de imersões diárias</td><td>"+humidityLimit+"</td></tr>";
+    String currentProgram ="";
+    String newProgram = "";
 
-    String imersionHours = "<br><table><tr>  /tr></table><br><br>";
-       
-        String clockButton = "<button id=\"button_clock\" onclick=adjustClock()>Atualizar opções</button>";      
-                
-        currentProgram = currentProgram + imersionHours;
+    newProgram = "let azimuth1 = " + data2[0];
+    currentProgram = newProgram + ";";
         
         Serial.println(currentProgram);
 
@@ -243,10 +305,7 @@ void setup()
 
 
 void loop()
-{
-        uint8_t result;
-        uint16_t data[6];
-        uint16_t data2[6];
+{      
        
         result = node1.readHoldingRegisters(0x0000, 2);
         if (result==node1.ku8MBSuccess){
