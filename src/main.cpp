@@ -50,6 +50,7 @@ String temperatureLimit = "";
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html>
+<head>
 <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="estilo.css">
@@ -64,8 +65,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     <!-- partial:index.partial.html -->
 <canvas width="400" height="600"></canvas>
 <!-- partial -->
-    <div class="div1"><br>
-
+    
 <script>
     const sel = document.querySelector.bind(document);
     const canvas = sel('canvas');
@@ -77,7 +77,6 @@ const char index_html[] PROGMEM = R"rawliteral(
     const MIDY = Math.floor(H/2);
     const MINSPEED = 300;
     const MAXSPEED = 300;
-    let speed = MINSPEED;
 
     %PLACEHOLDER%    
 
@@ -221,7 +220,7 @@ function spokes(centerX = MIDX, centerY = MIDY, stepAngle = 20, radius = 80, spo
 }
               
     </script>
-    <br><br></div>    
+       
   </body>
 </html>
 )rawliteral";
@@ -230,10 +229,12 @@ function spokes(centerX = MIDX, centerY = MIDY, stepAngle = 20, radius = 80, spo
 String processor(const String& var){
   if(var == "PLACEHOLDER"){
     String currentProgram ="";
-    String newProgram = "";
-
-    newProgram = "let azimuth1 = " + data2[0];
-    currentProgram = newProgram + ";";
+    String newAzimuth = "";
+    String newSpeed = "";
+    
+    newSpeed = "let speed =" + data[0];
+    newAzimuth = "let azimuth1 = " + data2[0];
+    currentProgram = newAzimuth + newSpeed;
         
         Serial.println(currentProgram);
 
