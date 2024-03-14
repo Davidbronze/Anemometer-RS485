@@ -43,6 +43,7 @@ uint16_t data[6];
 uint16_t data2[6];
 
 
+String currentProgram ="";
 String windLimit = "";
 String humidityLimit = "";
 String temperatureLimit = "";
@@ -228,13 +229,12 @@ function spokes(centerX = MIDX, centerY = MIDY, stepAngle = 20, radius = 80, spo
 
 String processor(const String& var){
   if(var == "PLACEHOLDER"){
-    String currentProgram ="";
     String newAzimuth = "";
     String newSpeed = "";
     
     newSpeed = "let speed =" + data[0];
-    newAzimuth = "let azimuth1 = " + data2[0];
-    currentProgram = newAzimuth + newSpeed;
+    newAzimuth = "; let azimuth1 = " + data2[0];
+    currentProgram = newAzimuth + newSpeed + ";";
         
         Serial.println(currentProgram);
 
