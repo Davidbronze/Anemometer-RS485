@@ -65,7 +65,6 @@ const char index_html[] PROGMEM = R"rawliteral(
     <!-- partial:index.partial.html -->
 <canvas width="400" height="600"></canvas>
 <!-- partial -->
-%PLACEHOLDER%
     
 <script>
     const sel = document.querySelector.bind(document);
@@ -78,7 +77,8 @@ const char index_html[] PROGMEM = R"rawliteral(
     const MIDY = Math.floor(H/2);
     const MINSPEED = 300;
     const MAXSPEED = 300;
-        
+
+    %PLACEHOLDER%        
 
 requestAnimationFrame(updateMeter);
 
@@ -231,8 +231,8 @@ String processor(const String& var){
     String newAzimuth = "";
     String newSpeed = "";
     
-    newSpeed = "<p>let speed = 100";
-    newAzimuth = " let azimuth1 = 220</p>";
+    newSpeed = "let speed = " + data[0];
+    newAzimuth = " let azimuth1 = " + data2[0];
     currentProgram = newAzimuth + newSpeed;
         
         Serial.println(currentProgram);
@@ -297,7 +297,8 @@ void setup()
             request->send_P(200, "text/html", index_html, processor); //processor
           }});
 
-
+          // Start server
+          server.begin();
 
         Serial.println("end of setup");
         
