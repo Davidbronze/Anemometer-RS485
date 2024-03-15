@@ -298,8 +298,9 @@ void setup()
             request->send_P(200, "text/html", index_html, processor); //processor
           }});
 
-
-
+        // Start server
+        server.begin();
+        
         Serial.println("end of setup");
         
         } 
