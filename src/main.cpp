@@ -5,12 +5,11 @@
 #include <Arduino.h>
 // github link: https://github.com/4-20ma/ModbusMaster
 #include <ModbusMaster.h>
-#include <ModbusRTUMaster.h>
 #include <SPI.h>
 #include "WiFi.h"
 #include "ESPAsyncWebServer.h"
 #include <Preferences.h> // EEPROM library
-
+#include <Arduino_JSON.h>
 
 
 /* Modbus stuff */
@@ -50,23 +49,25 @@ String temperatureLimit = "";
 
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
+<html lang="en" >
+<head>  
+  <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="estilo.css">
     <link href="https://fonts.googleapis.com/css?family=Prompt&display=swap" rel="stylesheet">
-    <link rel="shortcut icon" href="imagens/agro3.ico" type="image/vnd.microsoft.icon">    
-    <title>AgroexPerto</title>
+    <link rel="shortcut icon" href="imagens/agro3.ico" type="image/vnd.microsoft.icon">
+    <title>AgroexPerto</title> 
 <style type="text/css">
 </style>
 </head>
-  <body>
+<body>
     <!-- partial:index.partial.html -->
 <canvas width="400" height="600"></canvas>
 <!-- partial -->
     
 <script>
+    window.addEventListener('load', getReadings);
+    
     const sel = document.querySelector.bind(document);
     const canvas = sel('canvas');
     const cv = canvas.getContext('2d');
@@ -77,8 +78,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     const MIDY = Math.floor(H/2);
     const MINSPEED = 300;
     const MAXSPEED = 300;
-
-    %PLACEHOLDER%        
+       
 
 requestAnimationFrame(updateMeter);
 
@@ -218,6 +218,47 @@ function spokes(centerX = MIDX, centerY = MIDY, stepAngle = 20, radius = 80, spo
   }
   cv.stroke();
 }
+
+fuction getReadings(){
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      var myObj = JSON.parse(this.responseText);
+      console.log(myObj);
+      var temp = myObj.temperature;
+      var hum = myObj.humidity;
+      var speed = myObj.speed;
+      var direction = myObj.direction;      
+    }
+  }; 
+  xhr.open("GET", "/readings", true);
+  xhr.send();
+}
+
+if (!!window.EventSource) {
+  var source = new EventSource('/events');
+  
+  source.addEventListener('open', function(e) {
+    console.log("Events Connected");
+  }, false);
+
+  source.addEventListener('error', function(e) {
+    if (e.target.readyState != EventSource.OPEN) {
+      console.log("Events Disconnected");
+    }
+  }, false);
+  
+  source.addEventListener('message', function(e) {
+    console.log("message", e.data);
+  }, false);
+  
+  source.addEventListener('new_readings', function(e) {
+    console.log("new_readings", e.data);
+    var myObj = JSON.parse(e.data);
+    console.log(myObj);
+    gaugeTemp.value = myObj.temperature;
+    gaugeHum.value = myObj.humidity;
+  }, false);
               
     </script>
        
