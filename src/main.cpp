@@ -24,6 +24,10 @@ ModbusMaster node2;
 
 AsyncWebServer server(80);
 
+AsyncEventSource events("/events");
+
+JSONVar readings;
+
 Preferences prefs;
 
 // Replace with your network credentials
@@ -256,8 +260,10 @@ if (!!window.EventSource) {
     console.log("new_readings", e.data);
     var myObj = JSON.parse(e.data);
     console.log(myObj);
-    gaugeTemp.value = myObj.temperature;
-    gaugeHum.value = myObj.humidity;
+      var temp = myObj.temperature;
+      var hum = myObj.humidity;
+      var speed = myObj.speed;
+      var direction = myObj.direction;
   }, false);
               
     </script>
