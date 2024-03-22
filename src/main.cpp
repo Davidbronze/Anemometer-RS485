@@ -85,19 +85,11 @@ const char index_html[] PROGMEM = R"rawliteral(
     var temp;
     var hum;
     var speed;
-    var direction;
-       
-
-requestAnimationFrame(updateMeter);
-
-function updateMeter(atual)
-{ 
+    var direction;    
+ 
   meter(speed);
-  compass(azimuth1);
+  compass(direction);
   requestAnimationFrame(updateMeter);
-}
-
-//meter(280, 100, 100);
 
 function compass(azim = 10, centerX = MIDX, centerY = (3.3*MIDY/2), radius = 50){
   arcCompass(centerX, centerY,'#00FF7F', 4, 0, 360, radius, 'butt');  
@@ -105,7 +97,7 @@ function compass(azim = 10, centerX = MIDX, centerY = (3.3*MIDY/2), radius = 50)
   arcCompass(centerX, centerY,'#00FF7F', 8, 0, 360, 4, 'butt');
   cv.font = '2rem Roboto';
   cv.fillStyle = '#ffffff';
-  cv.fillText(azimuth1+90, centerX-20, centerY + 90);  
+  cv.fillText(direction+90, centerX-20, centerY + 90);  
 }
 
 function meter(angle = 250, centerX = MIDX, centerY = MIDY, radius = 100)
@@ -282,6 +274,7 @@ String getSensorReadings(){
   readings["direction"] = String(data2[0]);
   String jsonString = JSON.stringify(readings);
   return jsonString;
+  Serial.println(jsonString);
 }
 
 
