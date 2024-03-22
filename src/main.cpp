@@ -39,7 +39,7 @@ uint16_t inputSpeed[2]; // array to storage the holding registers of anemometer
 uint16_t inputDirection[2]; // array to storage holding registers of wind direction
 
 int intervalReading = 2000;
-int lastReading = 0;
+int lastTime = 0;
 
 uint8_t result;
 uint16_t data[6];
@@ -82,6 +82,10 @@ const char index_html[] PROGMEM = R"rawliteral(
     const MIDY = Math.floor(H/2);
     const MINSPEED = 300;
     const MAXSPEED = 300;
+    var temp;
+    var hum;
+    var speed;
+    var direction;
        
 
 requestAnimationFrame(updateMeter);
@@ -229,10 +233,10 @@ fuction getReadings(){
     if (this.readyState == 4 && this.status == 200) {
       var myObj = JSON.parse(this.responseText);
       console.log(myObj);
-      var temp = myObj.temperature;
-      var hum = myObj.humidity;
-      var speed = myObj.speed;
-      var direction = myObj.direction;      
+       temp = myObj.temperature;
+       hum = myObj.humidity;
+       speed = myObj.speed;
+       direction = myObj.direction;      
     }
   }; 
   xhr.open("GET", "/readings", true);
@@ -260,10 +264,10 @@ if (!!window.EventSource) {
     console.log("new_readings", e.data);
     var myObj = JSON.parse(e.data);
     console.log(myObj);
-      var temp = myObj.temperature;
-      var hum = myObj.humidity;
-      var speed = myObj.speed;
-      var direction = myObj.direction;
+       temp = myObj.temperature;
+       hum = myObj.humidity;
+       speed = myObj.speed;
+       direction = myObj.direction;
   }, false);
               
     </script>
@@ -273,21 +277,13 @@ if (!!window.EventSource) {
 )rawliteral";
 
 
-String processor(const String& var){
-  if(var == "PLACEHOLDER"){
-    String newAzimuth = "";
-    String newSpeed = "";
-    
-    newSpeed = "let speed = " + data[0];
-    newAzimuth = " let azimuth1 = " + data2[0];
-    currentProgram = newAzimuth + newSpeed;
-        
-        Serial.println(currentProgram);
-
-    return currentProgram;
-  }
-  return String();
+String getSensorReadings(){
+  readings["speed"] = String(data[0]);
+  readings["direction"] = String(data2[0]);
+  String jsonString = JSON.stringify(readings);
+  return jsonString;
 }
+
 
 // Pin 4 made high for Modbus transmision mode
 void modbusPreTransmission()
@@ -325,24 +321,23 @@ void setup()
 
         //callbacks de webserver
         server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){        
-                request->send_P(200, "text/html", index_html, processor); //processor
+                request->send(200, "text/html", index_html); //get readings
                   });
-        server.on("/adjustClock", HTTP_GET, [](AsyncWebServerRequest *request){
-            if (request->hasParam("year")) {
-                  windLimit = request->getParam("wind_speed_limt")->value();
-                  humidityLimit = request->getParam("UR_limt")->value();
-                  temperatureLimit = request->getParam("UR_limt")->value();
 
-                  int first = windLimit.toInt();
-                  int second = humidityLimit.toInt();
-                  int third = temperatureLimit.toInt();
-                  
-                  Serial.print(first);
-                  Serial.print(" : ");
-                  Serial.println(third);                  
+        server.on("/readings", HTTP_GET, [](AsyncWebServerRequest *request){
+            String json = getSensorReadings();
+            request->send(200, "application/json", json); //get readings
+            json = String();
+          });
 
-            request->send_P(200, "text/html", index_html, processor); //processor
-          }});
+          events.onConnect([](AsyncEventSourceClient *client){
+            if(client->lastId()){
+              Serial.printf("Client reconnecter! Last message ID is: %u\n", client->lastId());
+            }
+            client->send("hello!", NULL, millis(), 1000);
+          });
+
+          server.addHandler(&events);        
 
           // Start server
           server.begin();
@@ -353,8 +348,7 @@ void setup()
 
 
 void loop()
-{      
-       
+      {             
         result = node1.readHoldingRegisters(0x0000, 2);
         if (result==node1.ku8MBSuccess){
           Serial.print("Wind Speed=  ");
@@ -374,6 +368,12 @@ void loop()
             Serial.println(data2[i]);
           }
           Serial.println();
-        }        
-      
-  }
+        }
+
+        if ((millis() - lastTime) > intervalReading){
+          events.send("ping", NULL, millis());
+          events.send(getSensorReadings().c_str(), "new_readings", millis());
+          lastTime = millis();
+        }
+
+      }
