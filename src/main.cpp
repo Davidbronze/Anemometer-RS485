@@ -270,8 +270,21 @@ if (!!window.EventSource) {
 
 
 String getSensorReadings(){
-  readings["speed"] = String(data[0]);
-  readings["direction"] = String(data2[1]);
+  int azimReading = 0;
+  int speedReading = 0;
+  if(data2[1]<90){
+    azimReading = data2[1] + 270;
+    }
+    else{
+      azimReading = data2[1] - 90;
+    }
+
+    if(data[0]<20){
+      speedReading = data[0] * 5,7 + 180;
+    }
+    
+  readings["speed"] = String(data[0]);  
+  readings["direction"] = String(azimReading);
   String jsonString = JSON.stringify(readings);
   return jsonString;
   Serial.println(jsonString);
