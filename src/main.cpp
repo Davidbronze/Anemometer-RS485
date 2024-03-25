@@ -95,9 +95,9 @@ function compass(azim = 10, centerX = MIDX, centerY = (3.3*MIDY/2), radius = 50)
   arcCompass(centerX, centerY,'#00FF7F', 4, 0, 360, radius, 'butt');  
   compassLine(azim, '#FF0000', 4, centerX, centerY);
   arcCompass(centerX, centerY,'#00FF7F', 8, 0, 360, 4, 'butt');
-  cv.font = '2rem Roboto';
-  cv.fillStyle = '#ffffff';
-  cv.fillText(direction+90, centerX-20, centerY + 90);  
+  cv2.font = '2rem Roboto';
+  cv2.fillStyle = '#ffffff';
+  cv2.fillText(azim+90, centerX-20, centerY + 90);  
 }
 
 function meter(angle = 250, centerX = MIDX, centerY = MIDY, radius = 100)
@@ -219,7 +219,7 @@ function spokes(centerX = MIDX, centerY = MIDY, stepAngle = 20, radius = 80, spo
   cv.stroke();
 }
 
-fuction getReadings(){
+function getReadings(){
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
@@ -260,7 +260,7 @@ if (!!window.EventSource) {
        hum = myObj.humidity;
        speed = myObj.speed;
        direction = myObj.direction;
-  }, false);
+  }, false);}
               
     </script>
        
@@ -271,7 +271,7 @@ if (!!window.EventSource) {
 
 String getSensorReadings(){
   readings["speed"] = String(data[0]);
-  readings["direction"] = String(data2[0]);
+  readings["direction"] = String(data2[1]);
   String jsonString = JSON.stringify(readings);
   return jsonString;
   Serial.println(jsonString);
