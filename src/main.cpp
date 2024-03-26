@@ -38,7 +38,7 @@ const char* password = "XXXXXXXXXXX";
 uint16_t inputSpeed[2]; // array to storage the holding registers of anemometer
 uint16_t inputDirection[2]; // array to storage holding registers of wind direction
 
-int intervalReading = 2000;
+int intervalReading = 5000;
 int lastTime = 0;
 
 uint8_t result;
@@ -70,7 +70,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 <!-- partial -->
     
 <script>
-    window.addEventListener('load', getReadings);
+    window.addEventListener('load', getReadings);    
     
     const sel = document.querySelector.bind(document);
     const canvas = sel('canvas');
@@ -79,17 +79,15 @@ const char index_html[] PROGMEM = R"rawliteral(
     const W = canvas.width;
     const H = canvas.height;
     const MIDX = Math.floor(W/2);
-    const MIDY = Math.floor(H/2);
-    const MINSPEED = 300;
-    const MAXSPEED = 300;
+    const MIDY = Math.floor(H/2);   
     var temp;
     var hum;
     var speed;
-    var direction;    
- 
-  meter(speed);
-  compass(direction);
-  requestAnimationFrame(updateMeter);
+    var direction;  
+
+    meter(speed);
+    compass(direction);
+    requestAnimationFrame(updateMeter);
 
 function compass(azim = 10, centerX = MIDX, centerY = (3.3*MIDY/2), radius = 50){
   var azimReading = 0;
@@ -104,19 +102,19 @@ function compass(azim = 10, centerX = MIDX, centerY = (3.3*MIDY/2), radius = 50)
   arcCompass(centerX, centerY,'#00FF7F', 8, 0, 360, 4, 'butt');
   cv2.font = '2rem Roboto';
   cv2.fillStyle = '#ffffff';
-  cv2.fillText(azim, centerX-20, centerY + 90);  
+  cv2.fillText(azim, centerX, centerY + 90);  
 }
 
 function meter(angle = 250, centerX = MIDX, centerY = MIDY, radius = 100)
 {  
   var speedReading = 0;
     if (angle<20){
-      speedReading = angle*5.7+180;
+      speedReading = (angle*5.7)+180;
     }
     else if(angle>20 & angle<100){
-      speedReading = angle*0.7+280;
+      speedReading = (angle*0.7)+280;
     }
-    else{speedReading = 350;}
+    else{speedReading = 340;}
 
   cv.fillStyle = '#444444';
   cv.fillRect(0, 0, W, H);
@@ -132,7 +130,7 @@ function meter(angle = 250, centerX = MIDX, centerY = MIDY, radius = 100)
   //arc(centerX, centerY, '#ffff00', 5, 180, angle, radius);
   cv.font = '2rem Roboto';
   cv.fillStyle = '#ffffff';
-  cv.fillText((Math.floor(angle))/10, centerX - 20, centerY + 60);
+  cv.fillText((Math.floor(angle)), centerX, centerY + 60);
   cv.font = '2rem Roboto';
   cv.fillStyle = '#ffffff';
   cv.fillText('km/h', centerX - 25, centerY + 90);
@@ -274,9 +272,9 @@ if (!!window.EventSource) {
     console.log(myObj);
        temp = myObj.temperature;
        hum = myObj.humidity;
-       speed = myObj.speed;
-       direction = myObj.direction;
-  }, false);}
+       speed = myObj.winSpeed;
+       direction = myObj.winDirection;
+  }, false);} 
               
     </script>
        
@@ -286,8 +284,8 @@ if (!!window.EventSource) {
 
 
 String getSensorReadings(){
-  readings["speed"] = String(data[0]);  
-  readings["direction"] = String(data2[1]);
+  readings["winSpeed"] = String(9);  // substituindo data[0] por número para teste
+  readings["winDirection"] = String(45); // substituindo data2[1] por número para teste
   String jsonString = JSON.stringify(readings);
   return jsonString;
   Serial.println(jsonString);
@@ -341,7 +339,7 @@ void setup()
 
           events.onConnect([](AsyncEventSourceClient *client){
             if(client->lastId()){
-              Serial.printf("Client reconnecter! Last message ID is: %u\n", client->lastId());
+              Serial.printf("Client reconnected! Last message ID is: %u\n", client->lastId());
             }
             client->send("hello!", NULL, millis(), 1000);
           });
@@ -365,7 +363,6 @@ void loop()
             data[i] = node1.getResponseBuffer(i);
             Serial.print(data[i]);
           }
-          Serial.println();
         }
         
 
@@ -376,7 +373,6 @@ void loop()
             data2[i] = node2.getResponseBuffer(i);
             Serial.println(data2[i]);
           }
-          Serial.println();
         }
 
         if ((millis() - lastTime) > intervalReading){
