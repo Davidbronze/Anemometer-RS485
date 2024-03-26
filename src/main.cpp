@@ -92,16 +92,32 @@ const char index_html[] PROGMEM = R"rawliteral(
   requestAnimationFrame(updateMeter);
 
 function compass(azim = 10, centerX = MIDX, centerY = (3.3*MIDY/2), radius = 50){
+  var azimReading = 0;
+    if(azim<90){
+      azimReading = azim + 270;
+      }
+      else{
+        azimReading = azim - 90;
+      }
   arcCompass(centerX, centerY,'#00FF7F', 4, 0, 360, radius, 'butt');  
-  compassLine(azim, '#FF0000', 4, centerX, centerY);
+  compassLine(azimReading, '#FF0000', 4, centerX, centerY);
   arcCompass(centerX, centerY,'#00FF7F', 8, 0, 360, 4, 'butt');
   cv2.font = '2rem Roboto';
   cv2.fillStyle = '#ffffff';
-  cv2.fillText(azim+90, centerX-20, centerY + 90);  
+  cv2.fillText(azim, centerX-20, centerY + 90);  
 }
 
 function meter(angle = 250, centerX = MIDX, centerY = MIDY, radius = 100)
-{
+{  
+  var speedReading = 0;
+    if (angle<20){
+      speedReading = angle*5.7+180;
+    }
+    else if(angle>20 & angle<100){
+      speedReading = angle*0.7+280;
+    }
+    else{speedReading = 350;}
+
   cv.fillStyle = '#444444';
   cv.fillRect(0, 0, W, H);
 
@@ -110,7 +126,7 @@ function meter(angle = 250, centerX = MIDX, centerY = MIDY, radius = 100)
   arc(centerX, centerY, '#00FF7F', 20, 180, 260, radius, 'butt');
   arc(centerX, centerY, '#FFFF00', 20, 260, 300, radius, 'butt');
   arc(centerX, centerY, '#FF0000', 20, 300, 340, radius, 'butt');
-  finalLine(angle, '#ff0000', 8, centerX, centerY);
+  finalLine(speedReading, '#ff0000', 8, centerX, centerY);
   arc(centerX, centerY, '#0000FF', 3, 180, 350, radius - 80, 'butt');
   arc(centerX, centerY, '#00ACC1', 3, 180, 350, radius - 85, 'butt');  
   //arc(centerX, centerY, '#ffff00', 5, 180, angle, radius);
@@ -270,21 +286,8 @@ if (!!window.EventSource) {
 
 
 String getSensorReadings(){
-  int azimReading = 0;
-  int speedReading = 0;
-  if(data2[1]<90){
-    azimReading = data2[1] + 270;
-    }
-    else{
-      azimReading = data2[1] - 90;
-    }
-
-    if(data[0]<20){
-      speedReading = data[0] * 5,7 + 180;
-    }
-    
   readings["speed"] = String(data[0]);  
-  readings["direction"] = String(azimReading);
+  readings["direction"] = String(data2[1]);
   String jsonString = JSON.stringify(readings);
   return jsonString;
   Serial.println(jsonString);
