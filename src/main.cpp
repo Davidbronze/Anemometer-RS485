@@ -102,7 +102,8 @@ function compass(azim = 10, centerX = MIDX, centerY = (3.3*MIDY/2), radius = 50)
   arcCompass(centerX, centerY,'#00FF7F', 8, 0, 360, 4, 'butt');
   cv2.font = '2rem Roboto';
   cv2.fillStyle = '#ffffff';
-  cv2.fillText(azim, centerX, centerY + 90);  
+  cv2.fillText(azim, centerX, centerY + 90);
+  cv2.fillText('  °', centerX+20, centerY + 90);  
 }
 
 function meter(angle = 250, centerX = MIDX, centerY = MIDY, radius = 100)
@@ -121,9 +122,7 @@ function meter(angle = 250, centerX = MIDX, centerY = MIDY, radius = 100)
 
   //spokes(centerX, centerY, 5, 85, 5, 345, 185, 2, '#ffff00')
   spokes(centerX, centerY);
-  arc(centerX, centerY, '#00FF7F', 20, 180, 260, radius, 'butt');
-  arc(centerX, centerY, '#FFFF00', 20, 260, 300, radius, 'butt');
-  arc(centerX, centerY, '#FF0000', 20, 300, 340, radius, 'butt');
+  arc(centerX, centerY, '#00FF7F', 20, 180, 340, radius, 'butt');
   finalLine(speedReading, '#ff0000', 8, centerX, centerY);
   arc(centerX, centerY, '#0000FF', 3, 180, 350, radius - 80, 'butt');
   arc(centerX, centerY, '#00ACC1', 3, 180, 350, radius - 85, 'butt');  
@@ -241,8 +240,8 @@ function getReadings(){
       console.log(myObj);
        temp = myObj.temperature;
        hum = myObj.humidity;
-       speed = myObj.speed;
-       direction = myObj.direction;      
+       speed = myObj.winSpeed;
+       direction = myObj.winDirection;      
     }
   }; 
   xhr.open("GET", "/readings", true);
