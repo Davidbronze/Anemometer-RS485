@@ -41,6 +41,8 @@ uint16_t inputDirection[2]; // array to storage holding registers of wind direct
 int intervalReading = 5000;
 int lastTime = 0;
 
+int test1 = 0;
+
 uint8_t result;
 uint16_t data[6];
 uint16_t data2[6];
@@ -70,8 +72,6 @@ const char index_html[] PROGMEM = R"rawliteral(
 <!-- partial -->
     
 <script>
-    window.addEventListener('load', getReadings);    
-    
     const sel = document.querySelector.bind(document);
     const canvas = sel('canvas');
     const cv = canvas.getContext('2d');
@@ -83,11 +83,9 @@ const char index_html[] PROGMEM = R"rawliteral(
     var temp;
     var hum;
     var speed;
-    var direction;  
+    var direction;
 
-    meter(speed);
-    compass(direction);
-    requestAnimationFrame(updateMeter);
+     window.addEventListener('load', getReadings);
 
 function compass(azim = 10, centerX = MIDX, centerY = (3.3*MIDY/2), radius = 50){
   var azimReading = 0;
@@ -102,18 +100,18 @@ function compass(azim = 10, centerX = MIDX, centerY = (3.3*MIDY/2), radius = 50)
   arcCompass(centerX, centerY,'#00FF7F', 8, 0, 360, 4, 'butt');
   cv2.font = '2rem Roboto';
   cv2.fillStyle = '#ffffff';
-  cv2.fillText(azim, centerX, centerY + 90);
+  cv2.fillText(azim, centerX-20, centerY + 90);
   cv2.fillText('  °', centerX+20, centerY + 90);  
 }
 
-function meter(angle = 250, centerX = MIDX, centerY = MIDY, radius = 100)
+function meter(angle = 20, centerX = MIDX, centerY = MIDY, radius = 100)
 {  
   var speedReading = 0;
     if (angle<20){
       speedReading = (angle*5.7)+180;
     }
-    else if(angle>20 & angle<100){
-      speedReading = (angle*0.7)+280;
+    else if(angle<100){
+      speedReading = (angle*0.65)+280;
     }
     else{speedReading = 340;}
 
@@ -246,6 +244,8 @@ function getReadings(){
   }; 
   xhr.open("GET", "/readings", true);
   xhr.send();
+  meter(speed);
+  compass(direction);
 }
 
 if (!!window.EventSource) {
@@ -273,6 +273,8 @@ if (!!window.EventSource) {
        hum = myObj.humidity;
        speed = myObj.winSpeed;
        direction = myObj.winDirection;
+       meter(speed);
+       compass(direction);
   }, false);} 
               
     </script>
@@ -283,8 +285,10 @@ if (!!window.EventSource) {
 
 
 String getSensorReadings(){
-  readings["winSpeed"] = String(9);  // substituindo data[0] por número para teste
-  readings["winDirection"] = String(45); // substituindo data2[1] por número para teste
+  test1 = (test1 == 10) ? 20 : 10;
+  int test2 = test1 * 10;  
+  readings["winSpeed"] = String(test1);  // substituindo data[0] por número para teste
+  readings["winDirection"] = String(test2); // substituindo data2[1] por número para teste
   String jsonString = JSON.stringify(readings);
   return jsonString;
   Serial.println(jsonString);
