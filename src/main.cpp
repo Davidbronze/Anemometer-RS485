@@ -38,10 +38,8 @@ const char* password = "XXXXXXXXXXX";
 uint16_t inputSpeed[2]; // array to storage the holding registers of anemometer
 uint16_t inputDirection[2]; // array to storage holding registers of wind direction
 
-int intervalReading = 5000;
+int intervalReading = 2000;
 int lastTime = 0;
-
-int test1 = 0;
 
 uint8_t result;
 uint16_t data[6];
@@ -284,11 +282,9 @@ if (!!window.EventSource) {
 )rawliteral";
 
 
-String getSensorReadings(){
-  test1 = (test1 == 10) ? 20 : 10;
-  int test2 = test1 * 10;  
-  readings["winSpeed"] = String(test1);  // substituindo data[0] por número para teste
-  readings["winDirection"] = String(test2); // substituindo data2[1] por número para teste
+String getSensorReadings(){ 
+  readings["winSpeed"] = String(data[0]);  // substituindo data[0] por número para teste
+  readings["winDirection"] = String(data2[1]); // substituindo data2[1] por número para teste
   String jsonString = JSON.stringify(readings);
   return jsonString;
   Serial.println(jsonString);
@@ -363,11 +359,10 @@ void loop()
         if (result==node1.ku8MBSuccess){
           Serial.print("Wind Speed=  ");
           for (int i = 0; i < 2; i ++){
-            data[i] = node1.getResponseBuffer(i);
+            data[i] = (node1.getResponseBuffer(i))/10;
             Serial.print(data[i]);
           }
         }
-        
 
         result = node2.readHoldingRegisters(0x0000, 2);
         if (result==node2.ku8MBSuccess){
