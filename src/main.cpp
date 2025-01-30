@@ -38,7 +38,7 @@ const char* password = "XXXXXXXXXXX";
 uint16_t inputSpeed[2]; // array to storage the holding registers of anemometer
 uint16_t inputDirection[2]; // array to storage holding registers of wind direction
 
-int intervalReading = 2000;
+int intervalReading = 1000;
 int lastTime = 0;
 
 uint8_t result;
@@ -283,12 +283,12 @@ if (!!window.EventSource) {
 
 
 String getSensorReadings(){ 
-  readings["winSpeed"] = String(data[0]);  // substituindo data[0] por número para teste
-  readings["winDirection"] = String(data2[1]); // substituindo data2[1] por número para teste
-  String jsonString = JSON.stringify(readings);
-  return jsonString;
-  Serial.println(jsonString);
-}
+      readings["winSpeed"] = String(data[0]);
+      readings["winDirection"] = String(data2[1]);
+      String jsonString = JSON.stringify(readings);
+      Serial.println(jsonString);
+      return jsonString;
+  }
 
 
 // Pin 4 made high for Modbus transmision mode
@@ -360,7 +360,7 @@ void loop()
           Serial.print("Wind Speed=  ");
           for (int i = 0; i < 2; i ++){
             data[i] = (node1.getResponseBuffer(i))/10;
-            Serial.print(data[i]);
+            Serial.println(data[i]);
           }
         }
 
@@ -378,5 +378,4 @@ void loop()
           events.send(getSensorReadings().c_str(), "new_readings", millis());
           lastTime = millis();
         }
-
       }
